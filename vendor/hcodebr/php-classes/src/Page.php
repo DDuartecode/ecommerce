@@ -5,7 +5,7 @@ namespace Hcode;
 use Rain\Tpl;
 
 /**
- * 
+ * __construct() e __destruct(). São os métodos executados assim que a classe da página é iniciada e finalizada. Um é responsável por renderizar o header da página e outro renderiza o footer
  */
 class Page
 {
@@ -19,10 +19,10 @@ class Page
 	{
 		$this->options = array_merge($this->defaults, $opts);//Em caso de conflito com dados iguais, o parâmetro posterior sobrescreve o anterior, afim de mesclar os dois arrays($defaults+$opts) em um só ($options).
 
-		// config
+		// config [metodo que vem do slimframework]
 		$config = array(
 						"tpl_dir"       => $_SERVER["DOCUMENT_ROOT"]."/views/",
-						"cache_dir"     => $_SERVER["DOCUMENT_ROOT"]."/views-cache",
+						"cache_dir"     => $_SERVER["DOCUMENT_ROOT"]."/views-cache/",
 						"debug"         => false // set to false to improve the speed
 					);
 

@@ -2,20 +2,23 @@
 
 require_once("vendor/autoload.php");
 
-$app = new \Slim\Slim();
+use \Slim\Slim;
+use \Hcode\Page;
+
+$app = new Slim();
 
 $app->config('debug', true);
 
 $app->get('/', function() {
     
-	$sql = new Hcode\DB\Sql();
+	$page = new Page(); //Atribui a classe Page ao objeto page [obrigatória a criação da stancia]; [também chama o método construtor, responsável por exibir o header na página]
 
-	$results = $sql->select("SELECT * FROM tb_users");
+	$page->setTpl("index"); //Carrega o arquivo index que contém o conteúdo da página
+//-----------------------------------------------------------------------------------//
+	//Após tudo ter sido realizado, a function construct é zerada da memória, com isso a function destruct é invocada, contruindo o header 
+//-----------------------------------------------------------------------------------//
+});// após todo esses processos terem sido realizados dentro da rota / utilizada pelo framework slimframework.
 
-	echo json_encode($results);
-
-});
-
-$app->run();
+$app->run();// run executa todo esse pacote que foi construído dentro da rota, exibindo o conteúdo na tela.
 
  ?>

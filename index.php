@@ -1,10 +1,11 @@
 <?php 
-
+session_start();
 require_once("vendor/autoload.php");
 
 use \Slim\Slim;
 use \Hcode\Page;
 use \Hcode\PageAdmin;
+use \Hcode\Model\User;
 
 $app = new Slim();
 
@@ -22,9 +23,37 @@ $app->get('/', function() {
 
 $app->get('/administrator', function() {
     
+	User::verifyLogin();
+
 	$page = new PageAdmin();
 
-	$page->setTpl("index");
+	$page->setTpl("index");// ("index") = template
+});
+
+$app->get('/administrator/login', function() {
+
+	$page = new PageAdmin([
+			"header"=>false,//desabilita o header padrão que é chamado pelo método construct, na page do usuário normal
+			"footer"=>false //desabilita o footer padrão que é chamado pelo método destruct na page do usuário normal
+	]);
+
+	$page->setTpl("login");// ("index") = template
+});
+
+$app->post('/administrator/login', function() {
+
+	User::login($_POST["login"], $_POST["password"]);
+
+	header("Location /administrator");
+	exit;
+
+});
+
+$app->get('/administrator/logout', function(){
+	User::logout();
+
+	header("Location: /administrator/login");
+	exit;
 });
 
 $app->run();// run executa todo esse pacote que foi construído dentro da rota, exibindo o conteúdo na tela.

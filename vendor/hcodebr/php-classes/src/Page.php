@@ -12,6 +12,8 @@ class Page
 	private $tpl;
 	private $options = [];
 	private $defaults = [
+		"header"=>true,
+		"footer"=>true,
 		"data"=>[]
 	];
 	
@@ -31,8 +33,8 @@ class Page
 		$this->tpl = new Tpl;
 
 		$this->setData($this->options["data"]);
-
-		$this->tpl->draw("header");//Chama o arquivo que contém o desenho do header, contido na pasta views [irá carregar ao instanciar a function]
+		//Se a opção header for verdadeira o header carrega
+		if ($this->options["header"] === true) $this->tpl->draw("header");//Chama o arquivo que contém o desenho do header, contido na pasta views [irá carregar ao instanciar a function]
 	}
 
 	private function setData($data = array())
@@ -51,7 +53,8 @@ class Page
 
 	public function __destruct()//Quando a função construct terminar, essa função e chamada
 	{
-		$this->tpl->draw("footer");//Chama o arquivo que contém o desenho do footer, contido na pasta views [irá carregar após a funtion setTpl for finalizada]
+		//Se a opção footer for verdadeira o header carrega
+		if ($this->options["footer"] === true) $this->tpl->draw("footer");//Chama o arquivo que contém o desenho do footer, contido na pasta views [irá carregar após a funtion setTpl for finalizada]
 	}
 }
 

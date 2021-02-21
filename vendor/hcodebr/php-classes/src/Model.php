@@ -6,20 +6,28 @@ class Model {
 
 	private $values = [];
 
-	public function __call($name, $args)
+	public function __call($name, $args) //executa sempre que um metodo for chamado
 	{
 		$method = substr($name, 0, 3);//tras os três primeiros caracteres a partir da posição zero
 		$fieldName = substr($name, 3, strlen($name));//tras os caracteres da posição 3 até a posição final da string [strlen conta a quantidade de caracteres da string]
 
-		var_dump($method, $fieldName);
-		exit;
+		switch ($method) {
+			case 'get':
+				return $this->values[$fieldName];
+				break;
+
+			case 'set':
+				$this->values[$fieldName] = $args[0];
+				break;
+		}
+
 	}
 
-	public function setData($data = array())
+	public function setData($data = array())//cria set's dinamicamente de acordo com a quantidade de dados.
 	{
-		foreach ($data as $key => $value) {
+		foreach ($data as $key => $value){//realiza os sets, de acordo com a quantidade de dados no array.
 			
-			$this->{"set".$key}($value);
+			$this->{"set".$key}($value);// cria os métodos set's Ex: banco retorna id = 1, função cria o método setid(1);
 		}
 	}
 

@@ -37,18 +37,18 @@ class Page
 		if ($this->options["header"] === true) $this->tpl->draw("header");//Chama o arquivo que contém o desenho do header, contido na pasta views [irá carregar ao instanciar a function]
 	}
 
-	private function setData($data = array())
+	private function setData($data = array())// 
 	{
-		foreach ($data as $key => $value) {
+		foreach ($data as $key => $value) { 
 			$this->tpl->assign($key, $value);	
 		}			
 	}
 
 	public function setTpl($name, $data = array(), $returnHTML = false)
 	{
-		$this->setData($data);//Irá carregar o arquivo no momento que o médodo for invocado.
+		$this->setData($data);//seta os dados que serão carregados pelo metodo setData [line:40]
 
-	    return $this->tpl->draw($name, $returnHTML);
+	    return $this->tpl->draw($name, $returnHTML); // chama o template inserido pelo método, quando a rota é acionada.
 	}
 
 	public function __destruct()//Quando a função construct terminar, essa função e chamada

@@ -258,6 +258,7 @@ desired effect
         <!-- Optionally, you can add icons to the links -->
         <li><a href="/administrator/users"><i class="fa fa-users"></i> <span>Usuários</span></a></li>
         <li><a href="/administrator/categories"><i class="fa fa-code-fork"></i> <span>Categorias</span></a></li>
+        <li><a href="/administrator/products"><i class="fa fa-code-fork"></i> <span>Produtos</span></a></li>
         <li class="treeview">
           <a href="#"><i class="fa fa-link"></i> <span>Multilevel</span>
             <span class="pull-right-container">

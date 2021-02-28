@@ -9,6 +9,7 @@ $app = new Slim();
 
 $app->config('debug', true);// método do slimframework[true = exibe os exceptions dentro do framework] - [false = não exibe exceptions do framework]
 
+require_once("functions.php");
 require_once("site.php");
 require_once("administrator.php");
 require_once("administrator_user.php");

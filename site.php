@@ -1,7 +1,8 @@
 <?php 
 
 use \Hcode\Page; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Page.php]
-use \Hcode\Model\Product;
+use \Hcode\Model\Product; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Product.php]
+use \Hcode\Model\Category; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Category.php]
 
 $app->get('/', function() {
     
@@ -16,5 +17,20 @@ $app->get('/', function() {
 	//Após tudo ter sido realizado, a function construct é zerada da memória, com isso a function destruct é invocada, contruindo o header 
 //-----------------------------------------------------------------------------------//
 });// após todo esses processos terem sido realizados dentro da rota / utilizada pelo framework slimframework.
+
+$app->get("/categories/:idcategory", function($idcategory){
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$page = new Page();
+
+	$page->setTpl("category", [
+		'category'=>$category->getValues(),
+		'products'=>Product::checkList($category->getProducts())
+	]);
+
+});
 
  ?>

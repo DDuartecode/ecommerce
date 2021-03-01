@@ -3,6 +3,7 @@
 use \Hcode\PageAdmin; // [C:\e-commerce\vendor\hcodebr\php-classes\src\PageAdmin.php]
 use \Hcode\Model\User;// [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\User.php]
 use \Hcode\Model\Category;// [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Category.php]
+use \Hcode\Model\Product; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model]
 
 $app->get("/administrator/categories", function(){
 
@@ -29,6 +30,8 @@ $app->get("/administrator/categories/create", function(){
 });
 
 $app->post("/administrator/categories/create", function(){
+
+	User::verifyLogin();
 
 	$category = new Category();
 
@@ -89,18 +92,59 @@ $app->post("/administrator/categories/:idcategory", function($idcategory){
 
 });
 
-$app->get("/categories/:idcategory", function($idcategory){
+$app->get("/administrator/categories/:idcategory/products", function($idcategory){
+
+	User::verifyLogin();
 
 	$category = new Category();
 
 	$category->get((int)$idcategory);
 
-	$page = new Page();
+	$page = new PageAdmin();
 
-	$page->setTpl("category", [
+	$page->setTpl("categories-products", [
 		'category'=>$category->getValues(),
-		'products'=>[]
+		'productsRelated'=>$category->getProducts(),
+		'productsNotRelated'=>$category->getProducts(false),
 	]);
+
+});
+
+$app->get("/administrator/categories/:idcategory/products/:idproduct/add", function($idcategory, $idproduct){
+
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$category->addProduct($product);
+
+	header("Location: /administrator/categories/".$idcategory."/products");
+	exit;
+
+});
+
+$app->get("/administrator/categories/:idcategory/products/:idproduct/remove", function($idcategory, $idproduct){
+
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$category->removeProduct($product);
+
+	header("Location: /administrator/categories/".$idcategory."/products");
+	exit;
 
 });
 

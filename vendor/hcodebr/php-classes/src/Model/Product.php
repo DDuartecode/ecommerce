@@ -25,7 +25,6 @@ class Product extends Model {
 			$row = $p->getValues();
 
 		}
-
 		return $list;
 	}
 
@@ -85,7 +84,7 @@ class Product extends Model {
 			$url = "/res/site/img/products/product.jpg";
 		}
 
-		$this->setdesphoto($url);
+		return $this->setdesphoto($url);
 	}
 
 	public function getValues()
@@ -95,6 +94,7 @@ class Product extends Model {
 		$values = parent::getValues();
 
 		return $values;
+
 	}
 
 	public function setPhoto($file)
@@ -116,6 +116,7 @@ class Product extends Model {
 			$image = imagecreatefrompng($file["tmp_name"]);
 			break;
 		}
+		die(var_dump($image));
 
 		$dist = $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."res".DIRECTORY_SEPARATOR."site".DIRECTORY_SEPARATOR."img".DIRECTORY_SEPARATOR."products".DIRECTORY_SEPARATOR.$this->getidproduct().".jpg";
 

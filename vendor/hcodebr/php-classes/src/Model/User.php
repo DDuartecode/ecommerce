@@ -15,6 +15,50 @@ class User extends Model {
 	const ERROR_REGISTER = "UserErrorRegister";
 	const SUCCESS = "UserSucesss";
 
+	public static function getFromSession()
+	{
+
+		$user = new User();
+
+		if(isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
+
+			$user->setData($_SESSION[User::SESSION]);
+
+
+		}
+
+		return $user;
+
+	}
+
+	public static function checkLogin($inadmin = true)
+	{
+		if(
+			!isset($_SESSION[User::SESSION]) // se a sessão não foi definida
+			|| 							//ou
+			!$_SESSION[User::SESSION] // se a sessão for falsa/vazia
+			||							//ou
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0// se o id do usuário não for maior que zero
+		) {
+			//Não está logado
+			return false;
+		} else {
+			if($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {
+
+				return true;
+
+			} else if($inadmin === false) {
+
+				return true;
+
+			} else {
+
+				return false;
+
+			}
+		}
+	}
+
 	public static function login($login, $password) //valida login e senha
 	{
 		$sql = new Sql();
@@ -51,15 +95,8 @@ class User extends Model {
 
 	public static function verifyLogin($inadmin = true)
 	{
-		if (
-			!isset($_SESSION[User::SESSION]) // se a sessão não foi definida
-			|| 							//ou
-			!$_SESSION[User::SESSION] // se a sessão for falsa/vazia
-			||							//ou
-			!(int)$_SESSION[User::SESSION]["iduser"] > 0// se o id do usuário não for maior que zero
-			||  						//ou
-			(bool)$_SESSION[User::SESSION]["inadmin"] !== $inadmin // se o usuário não for diferente de admin [Compara booleano (0 ou 1) 1 = admin]
-		){
+		if (User::checkLogin($inadmin)){
+
 			header("Location: /administrator/login");//redireciona para a tela de login novamente
 			exit;
 		}

@@ -3,6 +3,7 @@
 use \Hcode\Page; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Page.php]
 use \Hcode\Model\Product; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Product.php]
 use \Hcode\Model\Category; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Category.php]
+use \Hcode\Model\Cart; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Cart.php]
 
 $app->get('/', function() {
     
@@ -60,6 +61,16 @@ $app->get("/products/:desurl", function($desurl){
 		'product'=>$product->getValues(),
 		'categories'=>$product->getCategories()
 	]);
+
+});
+
+$app->get("/cart", function(){
+
+	$cart = Cart::getFromSession();
+
+	$page = new Page();
+
+	$page->setTpl("cart");
 
 });
 

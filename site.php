@@ -4,6 +4,8 @@ use \Hcode\Page; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Page.php]
 use \Hcode\Model\Product; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Product.php]
 use \Hcode\Model\Category; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Category.php]
 use \Hcode\Model\Cart; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Cart.php]
+use \Hcode\Model\Address; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Address.php]
+use \Hcode\Model\User; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\User.php]
 
 $app->get('/', function() {
     
@@ -93,8 +95,6 @@ $app->get("/cart/:idproduct/add", function($idproduct){
 		$cart->addProduct($product);
 	}
 
-
-
 	header("Location: /cart");
 	exit;
 
@@ -137,6 +137,59 @@ $app->post("/cart/freight", function(){
 	$cart->setFreight($_POST['zipcode']);
 
 	header("Location: /cart");
+	exit;
+
+});
+
+$app->get("/checkout", function(){
+
+	User::verifyLogin(false);// false define que não é uma rota administrativa
+
+	$cart = Cart::getFromSession();
+
+	$address = new Address();
+
+	$page = new Page();
+
+	$page->setTpl("checkout", [
+		'cart'=>$cart->getValues(),
+		'address'=>$address->getValues()
+	]);
+
+});
+
+$app->get("/login", function(){
+
+	$page = new Page();
+
+	$page->setTpl("login", [
+		'error'=>User::getError()
+	]);
+
+});
+
+$app->post("/login", function(){
+
+	try {
+
+		User::login($_POST['login'], $_POST['password']);
+
+	} catch(Exception $e){
+
+		User::setError($e->getMessage());
+
+	}
+
+	header("Location: /checkout");
+	exit;
+
+});
+
+$app->get("/logout", function(){
+
+	User::logout();
+
+	header("Location: /login");
 	exit;
 
 });

@@ -163,7 +163,9 @@ $app->get("/login", function(){
 	$page = new Page();
 
 	$page->setTpl("login", [
-		'error'=>User::getError()
+		'error'=>User::getError(),
+		'errorRegister'=>User::getErrorRegister(),
+		'registerValues'=>(isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']//se a sessão conter os dados de registros, irá enviar os dados novamente para os campos no template, se não envia um array com dados vazios.
 	]);
 
 });
@@ -190,6 +192,59 @@ $app->get("/logout", function(){
 	User::logout();
 
 	header("Location: /login");
+	exit;
+
+});
+
+$app->post("/register", function(){
+
+	$_SESSION['registerValues'] = $_POST;//Adiciono os dados do post na sessão, para n serem perdidos quando a página reiniciar, e envio eles novamente para os campos através da rota de login.
+
+	if(!isset($_POST['name']) || $_POST['name'] == ''){
+
+		User::setErrorRegister("Preencha o seu nome.");
+		header("Location: /login");
+		exit;
+	}
+
+	if(!isset($_POST['email']) || $_POST['email'] == ''){
+
+		User::setErrorRegister("Preencha o seu email.");
+		header("Location: /login");
+		exit;
+	}
+
+	if(!isset($_POST['password']) || $_POST['password'] == ''){
+
+		User::setErrorRegister("Preencha a senha.");
+		header("Location: /login");
+		exit;
+	}
+
+	if(User::checkLoginExist($_POST['email']) === true){
+
+		User::setErrorRegister("Este endereço de email já está sendo utilizado por outro usuário.");
+		header("Location: /login");
+		exit;
+
+	}
+
+	$user = new User();
+
+	$user->setData([
+		'inadmin'=>0,
+		'deslogin'=>$_POST['email'],
+		'desperson'=>$_POST['name'],
+		'desemail'=>$_POST['email'],
+		'despassword'=>$_POST['password'],
+		'nrphone'=>$_POST['phone']
+	]);
+
+	$user->save();
+
+	User::login($_POST['email'], $_POST['password']); //Autentica o usuário assim q ele se cadastrar, já o mantendo logado no site.
+
+	header("Location: /checkout");
 	exit;
 
 });

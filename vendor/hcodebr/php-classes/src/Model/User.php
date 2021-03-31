@@ -79,7 +79,7 @@ class User extends Model {
 
 			$user = new User();
 
-			$data['desperson'] = uft8_encode($data['desperson']);
+			$data['desperson'] = utf8_encode($data['desperson']);
 
 			$user->setData($data);
 
@@ -334,6 +334,11 @@ class User extends Model {
 		return $msg;
 	}
 
+	public static function clearErrorRegister()
+	{
+		$_SESSION[User::ERROR_REGISTER] = NULL;
+	}
+
 	public static function checkLoginExist($login)
 	{
 
@@ -343,7 +348,7 @@ class User extends Model {
 			':deslogin'=>$login
 		]);
 
-		return (count($result) > 0);
+		return (count($results) > 0);
 
 	}
 

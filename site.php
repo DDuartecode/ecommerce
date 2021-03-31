@@ -249,4 +249,65 @@ $app->post("/register", function(){
 
 });
 
+////////////////////////////////////////////////////////////////////////////////
+
+$app->get("/forgot", function(){//assionado ao clicar no botão
+
+	$page = new Page();
+
+	$page->setTpl("forgot");// ("forgot") = template
+
+});
+
+$app->post("/forgot", function(){//assionado ao enviar os dados
+
+	User::getForgot($_POST["email"], false); //pega o email inserido na página de redefinição de senha. [forgot.html]
+	header("Location: /forgot/sent");
+	exit;
+
+});
+
+$app->get("/forgot/sent", function(){
+
+	$page = new Page();
+
+	$page->setTpl("forgot-sent");// ("forgot-sent") = template
+
+});
+
+$app->get("/forgot/reset", function(){
+
+	$user = User::validForgotDecrypt($_GET["code"]);
+
+	$page = new Page();
+
+	$page->setTpl("forgot-reset", array(
+		"name"=>$user["desperson"],
+		"code"=>$_GET["code"]
+	));// ("forgot-reset") = template
+
+});
+
+$app->post("/forgot/reset", function(){
+
+	$forgot = User::validForgotDecrypt($_POST["code"]);
+
+	User::setForgotUsed($forgot["idrecovery"]);
+
+	$user = new User();
+
+	$user->get((int)$forgot["iduser"]);
+
+	$password = password_hash($_POST["password"], PASSWORD_DEFAULT, [
+		"cost"=>12
+	]);
+
+	$user->setPassword($password);
+
+	$page = new Page();
+
+	$page->setTpl("forgot-reset-success");// ("forgot-reset-success") = template
+
+});
+
  ?>

@@ -19,7 +19,7 @@ class Mailer {
 		$config = array(
 						"tpl_dir"       => $_SERVER["DOCUMENT_ROOT"]."/views/email/",
 						"cache_dir"     => $_SERVER["DOCUMENT_ROOT"]."/views-cache/",
-						"debug"         => false // set to false to improve the speed
+						"debug"         => true // set to false to improve the speed
 					);
 
 		Tpl::configure( $config ); 
@@ -42,7 +42,7 @@ class Mailer {
 		// 0 = off (for production use)
 		// 1 = client messages
 		// 2 = client and server messages
-		$this->mail->SMTPDebug = 0;
+		$this->mail->SMTPDebug = 2;
 
 		//Ask for HTML-friendly debug output
 		$this->mail->Debugoutput = 'html';

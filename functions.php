@@ -4,6 +4,8 @@ use \Hcode\Model\User;
 
 function formatPrice($vlPrice)
 {
+	if(!$vlPrice > 0) $vlPrice = 0;
+
 	return number_format($vlPrice, 2, ",", ".");
 }
 

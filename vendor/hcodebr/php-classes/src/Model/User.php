@@ -155,9 +155,11 @@ class User extends Model {
 			":iduser"=>$iduser
 		));
 
+		$data = $results[0];
+
 		$data['desperson'] = utf8_encode($data['desperson']);
 
-		$this->setData($results[0]); // realiza os set's de acordo com a quantidade de dados
+		$this->setData($data); // realiza os set's de acordo com a quantidade de dados
 	}
 
 	//atualiza os dados do usuário, quando editado
@@ -194,7 +196,7 @@ class User extends Model {
 		));
 	}
 	//função para recuperação de senha
-	public static function getForgot($email)
+	public static function getForgot($email, $inadmin = true)
 	{
 
 		$sql = new Sql();
@@ -231,7 +233,11 @@ class User extends Model {
 				$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));//busca o id da solicitação de redefinição de senha e criptografa o mesmo
 				$code = base64_encode($code);//codifica em base 64, para tornar legível caracteres ilegíveis, gerando um código.
 
-				$link = "http://www.hcodecommerce.com.br/administrator/forgot/reset?code=$code"; //link que será enviado para o email cadastrado, para realizar a alteração de senha.
+				if($inadmin === true){
+					$link = "http://www.hcodecommerce.com.br/administrator/forgot/reset?code=$code"; //link que será enviado para o email cadastrado, para realizar a alteração de senha.
+				} else {
+					$link = "http://www.hcodecommerce.com.br/forgot/reset?code=$code"; //link que será enviado para o email cadastrado, para realizar a alteração de senha.
+				}
 
 				$mailer = new Mailer($data["desemail"], $data["desperson"], "Redefinir Senha da Hcode Store", "forgot", array(
 					"name"=>$data["desperson"],

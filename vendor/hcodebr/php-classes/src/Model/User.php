@@ -163,22 +163,21 @@ class User extends Model {
 	}
 
 	//atualiza os dados do usuário, quando editado
-	public function update()
+	public function update($passwordHash = true)
 	{
 		$sql = new Sql();
-		/*
-		pdesperson VARCHAR(64),
-		pdeslogin VARCHAR(64),
-		pdespassword VARCHAR(256),
-		pdesemail VARCHAR(128),
-		pnrphone BIGINT,
-		pinadmin TINYINT
-		 */
+
+		if($passwordHash){
+			$password = User::getPasswordHash($this->getdespassword());
+		} else {
+			$password = $this->getdespassword();
+		}
+
 		$results = $sql->select("CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
 			":iduser"=>$this->getiduser(),
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>User::getPasswordHash($this->getdespassword()),
+			":despassword"=>$password,
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -276,7 +275,7 @@ class User extends Model {
 		)); // faz um select do usuário referente ao código de recuperação de senha enviado, porém só retorna se o envio do código foi feito dentro do prazo de 1 hr do momento da solicitação e se esse código não foi utilizado para uma recuperação nenhuma vez.
 
 		//valida se o código retornou algo
-		if(count($results) ===0)// se a quantidade de linhas for igual a zero
+		if(count($results) === 0)// se a quantidade de linhas for igual a zero
 		{
 			throw new \Exception("Não foi possível recuperar a senha");// estoura uma excessão
 		}
@@ -365,6 +364,25 @@ class User extends Model {
 			'cost'=>12
 		]);
 
+	}
+
+	public static function setSuccess($msg)
+	{
+		$_SESSION[User::SUCCESS] = $msg;
+	}
+
+	public static function getSuccess()
+	{
+		$msg = (isset($_SESSION[User::SUCCESS])) ? $_SESSION[User::SUCCESS] : "";
+
+		User::clearSuccess();
+
+		return $msg;
+	}
+
+	public static function clearSuccess()
+	{
+		$_SESSION[User::SUCCESS] = NULL;
 	}
 
 }

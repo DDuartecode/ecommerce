@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Hcode\Model;
 
@@ -6,9 +6,10 @@ use \Hcode\DB\Sql;
 use \Hcode\Model;
 use \Hcode\Mailer;
 
-class User extends Model {
+class User extends Model
+{
 
-	const SESSION = "User";//defini o nome da sessão
+	const SESSION = "User"; //defini o nome da sessão
 	const SECRET = "HcodePhp7_Secret";
 	const SECRET_IV = "HcodePhp7_Secret_IV";
 	const ERROR = "UserError";
@@ -20,62 +21,57 @@ class User extends Model {
 
 		$user = new User();
 
-		if(isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
+		if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0) {
 
 			$user->setData($_SESSION[User::SESSION]);
-
 		}
 
 		return $user;
-
 	}
 
 	public static function checkLogin($inadmin = true)
 	{
-		if(
+		if (
 			!isset($_SESSION[User::SESSION]) // se a sessão não foi definida
 			|| 							//ou
 			!$_SESSION[User::SESSION] // se a sessão for falsa/vazia
 			||							//ou
-			!(int)$_SESSION[User::SESSION]["iduser"] > 0// se o id do usuário não for maior que zero
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0 // se o id do usuário não for maior que zero
 		) {
 			//Não está logado
 			return false;
 		} else {
-			if($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {
+			if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {
 
 				return true;
-
-			} else if($inadmin === false) {
+			} else if ($inadmin === false) {
 
 				return true;
-
 			} else {
 
 				return false;
-
 			}
 		}
 	}
 
 	public static function login($login, $password) //valida login e senha
 	{
+
 		$sql = new Sql();
 
 		$results = $sql->select("SELECT * FROM tb_users a
 								INNER JOIN tb_persons b ON a.idperson = b.idperson
 								WHERE deslogin = :LOGIN;", array(
-			":LOGIN"=>$login
+			":LOGIN" => $login
 		));
-		if (count($results) === 0)
-		{
+
+		if (count($results) === 0) {
 			throw new \Exception("Usuário inexistente ou senha inválida.");
 		}
 
 		$data = $results[0];
 
-		if(password_verify($password, $data["despassword"]) === true)
-		{
+		if (password_verify($password, $data["despassword"]) === true) {
 
 			$user = new User();
 
@@ -83,28 +79,24 @@ class User extends Model {
 
 			$user->setData($data);
 
-			$_SESSION[User::SESSION] = $user->getValues();//pega os valores do model e insere na sessão.
+			$_SESSION[User::SESSION] = $user->getValues(); //pega os valores do model e insere na sessão.
 
 			return $user;
-
-
-
 		} else {
 
 			throw new \Exception("Usuário inexistente ou senha inválida.");
-			
 		}
 	}
 
 	public static function verifyLogin($inadmin = true)
 	{
 
-		if (!User::checkLogin($inadmin)){
+		if (!User::checkLogin($inadmin)) {
 
-			if($inadmin){
-				header("Location: /administrator/login");//redireciona para a tela de login administrativo novamente
+			if ($inadmin) {
+				header("Location: /administrator/login"); //redireciona para a tela de login administrativo novamente
 			} else {
-				header("Location: /login");//redireciona para a tela de login do site novamente 
+				header("Location: /login"); //redireciona para a tela de login do site novamente 
 			}
 			exit;
 		}
@@ -119,32 +111,24 @@ class User extends Model {
 	{
 		$sql = new Sql();
 
-	 return	$sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) ORDER BY b.desperson");
+		return	$sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) ORDER BY b.desperson");
 	}
 
 	public function save()
 	{
 
 		$sql = new Sql();
-		/*
-		pdesperson VARCHAR(64),
-		pdeslogin VARCHAR(64),
-		pdespassword VARCHAR(256),
-		pdesemail VARCHAR(128),
-		pnrphone BIGINT,
-		pinadmin TINYINT
-		 */
+
 		$results = $sql->select("CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
-			":desperson"=>utf8_decode($this->getdesperson()),
-			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>User::getPasswordHash($this->getdespassword()),
-			":desemail"=>$this->getdesemail(),
-			":nrphone"=>$this->getnrphone(),
-			":inadmin"=>$this->getinadmin()
+			":desperson" => utf8_decode($this->getdesperson()),
+			":deslogin" => $this->getdeslogin(),
+			":despassword" => User::getPasswordHash($this->getdespassword()),
+			":desemail" => $this->getdesemail(),
+			":nrphone" => $this->getnrphone(),
+			":inadmin" => $this->getinadmin()
 		));
 
 		$this->setData($results[0]);
-
 	}
 
 	public function get($iduser)
@@ -152,7 +136,7 @@ class User extends Model {
 		$sql = new Sql();
 
 		$results = $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) WHERE a.iduser = :iduser", array(
-			":iduser"=>$iduser
+			":iduser" => $iduser
 		));
 
 		$data = $results[0];
@@ -167,20 +151,20 @@ class User extends Model {
 	{
 		$sql = new Sql();
 
-		if($passwordHash){
+		if ($passwordHash) {
 			$password = User::getPasswordHash($this->getdespassword());
 		} else {
 			$password = $this->getdespassword();
 		}
 
 		$results = $sql->select("CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
-			":iduser"=>$this->getiduser(),
-			":desperson"=>utf8_decode($this->getdesperson()),
-			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>$password,
-			":desemail"=>$this->getdesemail(),
-			":nrphone"=>$this->getnrphone(),
-			":inadmin"=>$this->getinadmin()
+			":iduser" => $this->getiduser(),
+			":desperson" => utf8_decode($this->getdesperson()),
+			":deslogin" => $this->getdeslogin(),
+			":despassword" => $password,
+			":desemail" => $this->getdesemail(),
+			":nrphone" => $this->getnrphone(),
+			":inadmin" => $this->getinadmin()
 		)); // atualiza todas as informações do usuário que teve o id informado
 
 		$this->setData($results[0]);
@@ -191,7 +175,7 @@ class User extends Model {
 		$sql = new Sql();
 
 		$sql->query("CALL sp_users_delete(:iduser)", array(
-			":iduser"=>$this->getiduser()
+			":iduser" => $this->getiduser()
 		));
 	}
 	//função para recuperação de senha
@@ -203,44 +187,40 @@ class User extends Model {
 		$results = $sql->select("SELECT *
 								FROM tb_persons a INNER JOIN tb_users b USING(idperson)
 								WHERE a.desemail = :email;", array(
-									":email"=>$email
-								)); // busca os dados do usuário de acordo com o email inserido.
+			":email" => $email
+		)); // busca os dados do usuário de acordo com o email inserido.
 
 		//verifica se foi retornado um usuário
-		if(count($results) === 0)// se o retorno for igual a zero, email não está cadastrado no banco
+		if (count($results) === 0) // se o retorno for igual a zero, email não está cadastrado no banco
 		{
-			throw new \Exception("Não foi possível recuperar a senha.");	
-		}
-		else //se for diferente de zero, o email está cadastrado e prossegue com a validação da senha
+			throw new \Exception("Não foi possível recuperar a senha.");
+		} else //se for diferente de zero, o email está cadastrado e prossegue com a validação da senha
 		{
 
 			$data = $results[0];
 
 			$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
-				":iduser"=>$data["iduser"],
-				":desip"=>$_SERVER["REMOTE_ADDR"]
+				":iduser" => $data["iduser"],
+				":desip" => $_SERVER["REMOTE_ADDR"]
 			)); // insere o registro da tentativa de redefinição de senha e retorna os dados desse registro
 
-			if(count($results2) === 0)
-			{
-				throw new \Exception("Não foi possível recuperar a senha.");	
-			}
-			else
-			{
+			if (count($results2) === 0) {
+				throw new \Exception("Não foi possível recuperar a senha.");
+			} else {
 				$dataRecovery = $results2[0];
 
-				$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));//busca o id da solicitação de redefinição de senha e criptografa o mesmo
-				$code = base64_encode($code);//codifica em base 64, para tornar legível caracteres ilegíveis, gerando um código.
+				$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV)); //busca o id da solicitação de redefinição de senha e criptografa o mesmo
+				$code = base64_encode($code); //codifica em base 64, para tornar legível caracteres ilegíveis, gerando um código.
 
-				if($inadmin === true){
+				if ($inadmin === true) {
 					$link = "http://www.hcodecommerce.com.br/administrator/forgot/reset?code=$code"; //link que será enviado para o email cadastrado, para realizar a alteração de senha.
 				} else {
 					$link = "http://www.hcodecommerce.com.br/forgot/reset?code=$code"; //link que será enviado para o email cadastrado, para realizar a alteração de senha.
 				}
 
 				$mailer = new Mailer($data["desemail"], $data["desperson"], "Redefinir Senha da Hcode Store", "forgot", array(
-					"name"=>$data["desperson"],
-					"link"=>$link
+					"name" => $data["desperson"],
+					"link" => $link
 				));
 
 				$mailer->send();
@@ -254,7 +234,7 @@ class User extends Model {
 	{
 		$sql = new Sql();
 
-		$code = base64_decode($code);//decodifica os dados ilegíveis, deixando eles da forma que estavam quando foi encryptado do banco.
+		$code = base64_decode($code); //decodifica os dados ilegíveis, deixando eles da forma que estavam quando foi encryptado do banco.
 
 		$idrecovery = openssl_decrypt($code, 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV)); // faz o decrypt do código, deixando ele da forma que está no banco
 
@@ -271,15 +251,14 @@ class User extends Model {
 				AND
 				DATE_ADD(a.dtregister, INTERVAL 1 HOUR) >= NOW();
 		", array(
-			":idrecovery"=>$idrecovery
+			":idrecovery" => $idrecovery
 		)); // faz um select do usuário referente ao código de recuperação de senha enviado, porém só retorna se o envio do código foi feito dentro do prazo de 1 hr do momento da solicitação e se esse código não foi utilizado para uma recuperação nenhuma vez.
 
 		//valida se o código retornou algo
-		if(count($results) === 0)// se a quantidade de linhas for igual a zero
+		if (count($results) === 0) // se a quantidade de linhas for igual a zero
 		{
-			throw new \Exception("Não foi possível recuperar a senha");// estoura uma excessão
-		}
-		else // se for diferente de zero
+			throw new \Exception("Não foi possível recuperar a senha"); // estoura uma excessão
+		} else // se for diferente de zero
 		{
 			return $results[0]; // retorna os dados do usuário
 		}
@@ -290,19 +269,19 @@ class User extends Model {
 		$sql = new Sql();
 
 		$sql->query("UPDATE tb_userspasswordsrecoveries SET dtrecovery = NOW() WHERE idrecovery = :idrecovery", array(
-			":idrecovery"=>$idrecovery
-		));// faz o update do campo dtrecovery, inserindo a data e hora em que foi alterado a senha com a utilização do código/idrecovery enviado
+			":idrecovery" => $idrecovery
+		)); // faz o update do campo dtrecovery, inserindo a data e hora em que foi alterado a senha com a utilização do código/idrecovery enviado
 	}
 	//altera a senha no banco
 	public function setPassword($password)
 	{
-		
+
 		$sql = new Sql();
 
 		$sql->query("UPDATE tb_users SET despassword = :password WHERE iduser = :iduser", array(
-			":password"=>$password,
-			":iduser"=>$this->getiduser()
-		));// faz o update da senha para o usuário que teve o id informado
+			":password" => $password,
+			":iduser" => $this->getiduser()
+		)); // faz o update da senha para o usuário que teve o id informado
 
 	}
 
@@ -350,20 +329,17 @@ class User extends Model {
 		$sql = new Sql();
 
 		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :deslogin", [
-			':deslogin'=>$login
+			':deslogin' => $login
 		]);
 
 		return (count($results) > 0);
-
 	}
 
 	public static function getPasswordHash($password)
 	{
-
 		return password_hash($password, PASSWORD_DEFAULT, [
-			'cost'=>12
+			'cost' => 12
 		]);
-
 	}
 
 	public static function setSuccess($msg)
@@ -384,7 +360,4 @@ class User extends Model {
 	{
 		$_SESSION[User::SUCCESS] = NULL;
 	}
-
 }
-
- ?>

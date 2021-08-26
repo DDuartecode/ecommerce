@@ -1,28 +1,30 @@
-<?php 
+<?php
 
 use \Hcode\Page; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Page.php]
 use \Hcode\Model\Product; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Product.php]
 use \Hcode\Model\Category; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Category.php]
 use \Hcode\Model\Cart; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Cart.php]
 use \Hcode\Model\Address; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\Address.php]
+use Hcode\Model\Order;
+use Hcode\Model\OrderStatus;
 use \Hcode\Model\User; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\User.php]
 
-$app->get('/', function() {
-    
-    $products = Product::listAll();
+$app->get('/', function () {
+
+	$products = Product::listAll();
 
 	$page = new Page(); //Atribui a classe Page ao objeto page [obrigatória a criação da stancia]; [também chama o método construtor, responsável por exibir o header na página]
 
 	$page->setTpl("index", [
-		'products'=>Product::checkList($products)
+		'products' => Product::checkList($products)
 	]); //Carrega o arquivo index que contém o conteúdo da página
-//-----------------------------------------------------------------------------------//
+	//-----------------------------------------------------------------------------------//
 	//Após tudo ter sido realizado, a function construct é zerada da memória, com isso a function destruct é invocada, contruindo o header 
-//-----------------------------------------------------------------------------------//
-});// após todo esses processos terem sido realizados dentro da rota / utilizada pelo framework slimframework.
+	//-----------------------------------------------------------------------------------//
+}); // após todo esses processos terem sido realizados dentro da rota / utilizada pelo framework slimframework.
 
 
-$app->get("/categories/:idcategory", function($idcategory){
+$app->get("/categories/:idcategory", function ($idcategory) {
 
 	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
 
@@ -34,24 +36,23 @@ $app->get("/categories/:idcategory", function($idcategory){
 
 	$pages = [];
 
-	for ($i = 1; $i <= $pagination['pages']; $i++) { 
+	for ($i = 1; $i <= $pagination['pages']; $i++) {
 		array_push($pages, [
-			'link'=>'/categories/'.$category->getidcategory().'?page='.$i,
-			'page'=>$i
+			'link' => '/categories/' . $category->getidcategory() . '?page=' . $i,
+			'page' => $i
 		]);
 	}
 
 	$page = new Page();
 
 	$page->setTpl("category", [
-		'category'=>$category->getValues(),
-		'products'=>$pagination["data"],
-		'pages'=>$pages
+		'category' => $category->getValues(),
+		'products' => $pagination["data"],
+		'pages' => $pages
 	]);
-
 });
 
-$app->get("/products/:desurl", function($desurl){
+$app->get("/products/:desurl", function ($desurl) {
 
 	$product = new Product();
 
@@ -60,27 +61,25 @@ $app->get("/products/:desurl", function($desurl){
 	$page = new Page;
 
 	$page->setTpl("product-detail", [
-		'product'=>$product->getValues(),
-		'categories'=>$product->getCategories()
+		'product' => $product->getValues(),
+		'categories' => $product->getCategories()
 	]);
-
 });
 
-$app->get("/cart", function(){
+$app->get("/cart", function () {
 
 	$cart = Cart::getFromSession();
 
 	$page = new Page();
 
 	$page->setTpl("cart", [
-		'cart'=>$cart->getValues(),
-		'products'=>$cart->getProducts(),
-		'error'=>Cart::getMsgError()
+		'cart' => $cart->getValues(),
+		'products' => $cart->getProducts(),
+		'error' => Cart::getMsgError()
 	]);
-
 });
 
-$app->get("/cart/:idproduct/add", function($idproduct){
+$app->get("/cart/:idproduct/add", function ($idproduct) {
 
 	$product = new Product();
 
@@ -90,17 +89,16 @@ $app->get("/cart/:idproduct/add", function($idproduct){
 
 	$qtd = (isset($_GET['qtd'])) ? (int)$_GET['qtd'] : 1;
 
-	for($i = 0; $i < $qtd; $i++) {
-		
+	for ($i = 0; $i < $qtd; $i++) {
+
 		$cart->addProduct($product);
 	}
 
 	header("Location: /cart");
 	exit;
-
 });
 
-$app->get("/cart/:idproduct/minus", function($idproduct){
+$app->get("/cart/:idproduct/minus", function ($idproduct) {
 
 	$product = new Product();
 
@@ -112,10 +110,9 @@ $app->get("/cart/:idproduct/minus", function($idproduct){
 
 	header("Location: /cart");
 	exit;
-
 });
 
-$app->get("/cart/:idproduct/remove", function($idproduct){
+$app->get("/cart/:idproduct/remove", function ($idproduct) {
 
 	$product = new Product();
 
@@ -127,10 +124,9 @@ $app->get("/cart/:idproduct/remove", function($idproduct){
 
 	header("Location: /cart");
 	exit;
-
 });
 
-$app->post("/cart/freight", function(){
+$app->post("/cart/freight", function () {
 
 	$cart = Cart::getFromSession();
 
@@ -138,22 +134,21 @@ $app->post("/cart/freight", function(){
 
 	header("Location: /cart");
 	exit;
-
 });
 
-$app->get("/checkout", function(){
+$app->get("/checkout", function () {
 
-	User::verifyLogin(false);// false define que não é uma rota administrativa
+	User::verifyLogin(false); // false define que não é uma rota administrativa
 
 	$cart = Cart::getFromSession();
 
 	$address = new Address();
 
-	if(isset($_GET['zipcode'])){
+	if (isset($_GET['zipcode'])) {
 		$_GET['zipcode'] = $cart->getdeszipcode();
 	}
 
-	if (isset($_GET['zipcode'])){
+	if (isset($_GET['zipcode'])) {
 
 		$address->loadFromCEP($_GET['zipcode']);
 
@@ -162,63 +157,61 @@ $app->get("/checkout", function(){
 		$cart->save();
 
 		$cart->getCalculateTotal();
-
 	}
 
 	if (!$address->getdesaddress()) $address->setdesaddress('');
- 	if (!$address->getdescomplement()) $address->setdescomplement('');
- 	if (!$address->getdesdistrict()) $address->setdesdistrict('');
+	if (!$address->getdescomplement()) $address->setdescomplement('');
+	if (!$address->getdesdistrict()) $address->setdesdistrict('');
 	if (!$address->getdescity()) $address->setdescity('');
- 	if (!$address->getdesstate()) $address->setdesstate('');
- 	if (!$address->getdescountry()) $address->setdescountry('');
- 	if (!$address->getdeszipcode()) $address->setdeszipcode('');
+	if (!$address->getdesstate()) $address->setdesstate('');
+	if (!$address->getdescountry()) $address->setdescountry('');
+	if (!$address->getdeszipcode()) $address->setdeszipcode('');
 
 	$page = new Page();
 
 	$page->setTpl("checkout", [
-		'cart'=>$cart->getValues(),
-		'address'=>$address->getValues(),
-		'products'=>$cart->getProducts(),
-		'error'=>Address::getMsgError()
+		'cart' => $cart->getValues(),
+		'address' => $address->getValues(),
+		'products' => $cart->getProducts(),
+		'error' => Address::getMsgError()
 	]);
-
 });
 
-$app->post("/checkout", function(){
+$app->post("/checkout", function () {
 
 	User::verifyLogin(false);
 
-	if(!isset($_POST['zipcode']) || $_POST['zipcode'] === ''){
+	if (!isset($_POST['zipcode']) || $_POST['zipcode'] === '') {
 		Address::setMsgError("Informe o CEP");
-		header('Location: /checkout');	
+		header('Location: /checkout');
 		exit;
 	}
 
-	if(!isset($_POST['desaddress']) || $_POST['desaddress'] === ''){
+	if (!isset($_POST['desaddress']) || $_POST['desaddress'] === '') {
 		Address::setMsgError("Informe o endereço");
 		header('Location: /checkout');
 		exit;
 	}
 
-	if(!isset($_POST['desdistrict']) || $_POST['desdistrict'] === ''){
+	if (!isset($_POST['desdistrict']) || $_POST['desdistrict'] === '') {
 		Address::setMsgError("Informe o bairro");
 		header('Location: /checkout');
 		exit;
 	}
 
-	if(!isset($_POST['desstate']) || $_POST['desstate'] === ''){
+	if (!isset($_POST['desstate']) || $_POST['desstate'] === '') {
 		Address::setMsgError("Informe o estado");
 		header('Location: /checkout');
 		exit;
 	}
 
-	if(!isset($_POST['descity']) || $_POST['descity'] === ''){
+	if (!isset($_POST['descity']) || $_POST['descity'] === '') {
 		Address::setMsgError("Informe a cidade");
 		header('Location: /checkout');
 		exit;
 	}
 
-	if(!isset($_POST['descountry']) || $_POST['descountry'] === ''){
+	if (!isset($_POST['descountry']) || $_POST['descountry'] === '') {
 		Address::setMsgError("Informe o país");
 		header('Location: /checkout');
 		exit;
@@ -235,92 +228,98 @@ $app->post("/checkout", function(){
 
 	$address->save();
 
-	header("Location: /order");
+	$cart = Cart::getFromSession();
+
+	$cart->getCalculateTotal();
+
+	$order = new Order();
+	//die(var_dump($order->getValues()));
+	$order->setData([
+		'idcart' => $cart->getidcart(),
+		'idaddress' => $address->getidaddress(),
+		'iduser' => $user->getiduser(),
+		'idstatus' => OrderStatus::EM_ABERTO,
+		'vltotal' => $cart->getvltotal()
+	]);
+
+	header("Location: /order/" . $order->getidorder());
 	exit;
-
-
 });
 
-$app->get("/login", function(){
+$app->get("/login", function () {
 
 	$page = new Page();
 
 	$page->setTpl("login", [
-		'error'=>User::getError(),
-		'errorRegister'=>User::getErrorRegister(),
-		'registerValues'=>(isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']//se a sessão conter os dados de registros, irá enviar os dados novamente para os campos no template, se não envia um array com dados vazios.
+		'error' => User::getError(),
+		'errorRegister' => User::getErrorRegister(),
+		'registerValues' => (isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name' => '', 'email' => '', 'phone' => ''] //se a sessão conter os dados de registros, irá enviar os dados novamente para os campos no template, se não envia um array com dados vazios.
 	]);
-
 });
 
-$app->post("/login", function(){
+$app->post("/login", function () {
 
 	try {
 
 		User::login($_POST['login'], $_POST['password']);
-
-	} catch(Exception $e){
+	} catch (Exception $e) {
 
 		User::setError($e->getMessage());
-
 	}
 
 	header("Location: /checkout");
 	exit;
-
 });
 
-$app->get("/logout", function(){
+$app->get("/logout", function () {
 
 	User::logout();
 
 	header("Location: /login");
 	exit;
-
 });
 
-$app->post("/register", function(){
+$app->post("/register", function () {
 
-	$_SESSION['registerValues'] = $_POST;//Adiciono os dados do post na sessão, para n serem perdidos quando a página reiniciar, e envio eles novamente para os campos através da rota de login.
+	$_SESSION['registerValues'] = $_POST; //Adiciono os dados do post na sessão, para n serem perdidos quando a página reiniciar, e envio eles novamente para os campos através da rota de login.
 
-	if(!isset($_POST['name']) || $_POST['name'] == ''){
+	if (!isset($_POST['name']) || $_POST['name'] == '') {
 
 		User::setErrorRegister("Preencha o seu nome.");
 		header("Location: /login");
 		exit;
 	}
 
-	if(!isset($_POST['email']) || $_POST['email'] == ''){
+	if (!isset($_POST['email']) || $_POST['email'] == '') {
 
 		User::setErrorRegister("Preencha o seu email.");
 		header("Location: /login");
 		exit;
 	}
 
-	if(!isset($_POST['password']) || $_POST['password'] == ''){
+	if (!isset($_POST['password']) || $_POST['password'] == '') {
 
 		User::setErrorRegister("Preencha a senha.");
 		header("Location: /login");
 		exit;
 	}
 
-	if(User::checkLoginExist($_POST['email']) === true){
+	if (User::checkLoginExist($_POST['email']) === true) {
 
 		User::setErrorRegister("Este endereço de email já está sendo utilizado por outro usuário.");
 		header("Location: /login");
 		exit;
-
 	}
 
 	$user = new User();
 
 	$user->setData([
-		'inadmin'=>0,
-		'deslogin'=>$_POST['email'],
-		'desperson'=>$_POST['name'],
-		'desemail'=>$_POST['email'],
-		'despassword'=>$_POST['password'],
-		'nrphone'=>$_POST['phone']
+		'inadmin' => 0,
+		'deslogin' => $_POST['email'],
+		'desperson' => $_POST['name'],
+		'desemail' => $_POST['email'],
+		'despassword' => $_POST['password'],
+		'nrphone' => $_POST['phone']
 	]);
 
 	$user->save();
@@ -329,49 +328,47 @@ $app->post("/register", function(){
 
 	header("Location: /checkout");
 	exit;
-
 });
 
 ////////////////////////////////////////////////////////////////////////////////
 
-$app->get("/forgot", function(){//assionado ao clicar no botão
+$app->get("/forgot", function () { //assionado ao clicar no botão
 
 	$page = new Page();
 
-	$page->setTpl("forgot");// ("forgot") = template
+	$page->setTpl("forgot"); // ("forgot") = template
 
 });
 
-$app->post("/forgot", function(){//assionado ao enviar os dados
+$app->post("/forgot", function () { //assionado ao enviar os dados
 
 	User::getForgot($_POST["email"], false); //pega o email inserido na página de redefinição de senha. [forgot.html]
 	header("Location: /forgot/sent");
 	exit;
-
 });
 
-$app->get("/forgot/sent", function(){
+$app->get("/forgot/sent", function () {
 
 	$page = new Page();
 
-	$page->setTpl("forgot-sent");// ("forgot-sent") = template
+	$page->setTpl("forgot-sent"); // ("forgot-sent") = template
 
 });
 
-$app->get("/forgot/reset", function(){
+$app->get("/forgot/reset", function () {
 
 	$user = User::validForgotDecrypt($_GET["code"]);
 
 	$page = new Page();
 
 	$page->setTpl("forgot-reset", array(
-		"name"=>$user["desperson"],
-		"code"=>$_GET["code"]
-	));// ("forgot-reset") = template
+		"name" => $user["desperson"],
+		"code" => $_GET["code"]
+	)); // ("forgot-reset") = template
 
 });
 
-$app->post("/forgot/reset", function(){
+$app->post("/forgot/reset", function () {
 
 	$forgot = User::validForgotDecrypt($_POST["code"]);
 
@@ -381,19 +378,17 @@ $app->post("/forgot/reset", function(){
 
 	$user->get((int)$forgot["iduser"]);
 
-	$password = password_hash($_POST["password"], PASSWORD_DEFAULT, [
-		"cost"=>12
-	]);
+	$password = User::getPasswordHash($_POST["password"]);
 
 	$user->setPassword($password);
 
 	$page = new Page();
 
-	$page->setTpl("forgot-reset-success");// ("forgot-reset-success") = template
+	$page->setTpl("forgot-reset-success"); // ("forgot-reset-success") = template
 
 });
 
-$app->get("/profile", function(){
+$app->get("/profile", function () {
 
 	User::verifyLogin(false);
 
@@ -402,24 +397,23 @@ $app->get("/profile", function(){
 	$page = new Page();
 
 	$page->setTpl("profile", [
-		'user'=>$user->getValues(),
-		'profileMsg'=>User::getSuccess(),
-		'profileError'=>User::getError()
+		'user' => $user->getValues(),
+		'profileMsg' => User::getSuccess(),
+		'profileError' => User::getError()
 	]);
-
 });
 
-$app->post("/profile", function(){
+$app->post("/profile", function () {
 
 	User::verifyLogin(false);
 
-	if(!isset($_POST['desperson']) || $_POST['desperson'] === ''){
+	if (!isset($_POST['desperson']) || $_POST['desperson'] === '') {
 		User::setError("Preencha o seu nome.");
 		header("Location: /profile");
 		exit;
 	}
 
-	if(!isset($_POST['desemail']) || $_POST['desemail'] === ''){
+	if (!isset($_POST['desemail']) || $_POST['desemail'] === '') {
 		User::setError("Preencha o seu email.");
 		header("Location: /profile");
 		exit;
@@ -427,20 +421,18 @@ $app->post("/profile", function(){
 
 	$user = User::getFromSession();
 
-	if($_POST['desemail'] !== $user->getdesemail()){
+	if ($_POST['desemail'] !== $user->getdesemail()) {
 
-		if(User::checkLoginExist($_POST['desemail'])){
+		if (User::checkLoginExist($_POST['desemail'])) {
 
 			User::setError("Este endereço de email já está cadastrado");
 			header("Location: /profile");
 			exit;
-
 		}
-
 	}
 
 	//evita que o usuário acabe trocando os valores das variáveis do post e acabe alterando no banco sem querer
-	$_POST['inadmin'] = $user->getinadmin();//seta no post os dados que já estão cadastrados no banco.
+	$_POST['inadmin'] = $user->getinadmin(); //seta no post os dados que já estão cadastrados no banco.
 	$_POST['despassword'] = $user->getdespassword();
 	$_POST['deslogin'] = $_POST['desemail'];
 
@@ -452,7 +444,20 @@ $app->post("/profile", function(){
 
 	header("Location: /profile");
 	exit;
-
 });
 
- ?>
+$app->get("/order/:idorder", function ($idorder) {
+
+	User::verifyLogin(false);
+
+	$order = new Order();
+
+	$page = new Page();
+
+	$page->setTpl("payment", [
+		'order' => $order->getValues()
+	]);
+});
+
+$app->get("/boleto/:idorder", function ($idorder) {
+});

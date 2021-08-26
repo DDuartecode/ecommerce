@@ -1,10 +1,10 @@
-<?php 
+<?php
 
 use \Hcode\PageAdmin; // [C:\e-commerce\vendor\hcodebr\php-classes\src\PageAdmin.php]
-use \Hcode\Model\User;// [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\User.php]
+use \Hcode\Model\User; // [C:\e-commerce\vendor\hcodebr\php-classes\src\Model\User.php]
 
 // lista todos os usuários 
-$app->get("/administrator/users", function(){ 
+$app->get("/administrator/users", function () {
 
 
 	User::verifyLogin(); // vusuário precisa estar logado
@@ -14,13 +14,12 @@ $app->get("/administrator/users", function(){
 	$page = new PageAdmin();
 
 	$page->setTpl("users", array( //seta os dados contidos na variável $users [line 65]
-		"users"=>$users
+		"users" => $users
 	));
-
 });
 
 // tela para criar usuário
-$app->get("/administrator/users/create", function(){ 
+$app->get("/administrator/users/create", function () {
 
 	User::verifyLogin();
 
@@ -31,7 +30,7 @@ $app->get("/administrator/users/create", function(){
 });
 
 //rota para deletar usuários
-$app->get("/administrator/users/:iduser/delete", function($iduser){
+$app->get("/administrator/users/:iduser/delete", function ($iduser) {
 
 	User::verifyLogin();
 
@@ -43,12 +42,11 @@ $app->get("/administrator/users/:iduser/delete", function($iduser){
 
 	header("Location: /administrator/users");
 	exit;
-
 });
 
 // tela para editar o usuário
 // OBS[Somente de ser inserdo uma parâmetro na rota(Ex.":iduser"), o slin framework entende que a função pode enchergar esse parâmetro, setando ele na função]
-$app->get("/administrator/users/:iduser", function($iduser){ // com o parâmetro iduser, consegue trazer os dados de um usuário específico, para realaizar a edição.
+$app->get("/administrator/users/:iduser", function ($iduser) { // com o parâmetro iduser, consegue trazer os dados de um usuário específico, para realaizar a edição.
 
 	User::verifyLogin();
 
@@ -59,24 +57,19 @@ $app->get("/administrator/users/:iduser", function($iduser){ // com o parâmetro
 	$page = new PageAdmin();
 
 	$page->setTpl("users-update", array(
-		"user"=>$user->getValues()
+		"user" => $user->getValues()
 	));
-
 });
 // rota para inserir o usuário
-$app->post("/administrator/users/create", function(){
+$app->post("/administrator/users/create", function () {
 
 	User::verifyLogin();
 
 	$user = new User();
 
-	$_POST["inadmin"] = (isset($_POST["inadmin"]))?1:0;
+	$_POST["inadmin"] = (isset($_POST["inadmin"])) ? 1 : 0;
 
-	$_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_DEFAULT, [
-
- 		"cost"=>12
-
- 	]);
+	$_POST['despassword'] = User::getPasswordHash($_POST['despassword']);
 
 	$user->setData($_POST); //seta os dados dinamicamente
 
@@ -84,16 +77,15 @@ $app->post("/administrator/users/create", function(){
 
 	header("Location: /administrator/users");
 	exit;
-
 });
 // rota para inserir/salvar a edição do usuário
-$app->post("/administrator/users/:iduser", function($iduser){ 
+$app->post("/administrator/users/:iduser", function ($iduser) {
 
 	User::verifyLogin();
 
 	$user = new User();
 
-	$_POST["inadmin"] = (isset($_POST["inadmin"]))?1:0;
+	$_POST["inadmin"] = (isset($_POST["inadmin"])) ? 1 : 0;
 
 	$user->get((int)$iduser);
 
@@ -103,7 +95,4 @@ $app->post("/administrator/users/:iduser", function($iduser){
 
 	header("Location: /administrator/users");
 	exit;
-
-}); 
-
- ?>
+});

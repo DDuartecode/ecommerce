@@ -239,20 +239,22 @@ class User extends Model
 		$idrecovery = openssl_decrypt($code, 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV)); // faz o decrypt do código, deixando ele da forma que está no banco
 
 		//busca os dados do usuário de acordo com o código de recuperação enviado
-		$results = $sql->select("
-			SELECT *
+		$results = $sql->select(
+			"SELECT *
 			FROM tb_userspasswordsrecoveries a
 			INNER JOIN tb_users b USING(iduser)
 			INNER JOIN tb_persons c USING(idperson)
 			WHERE
-				a.idrecovery = :idrecovery
-				AND
-				a.dtrecovery IS NULL
-				AND
-				DATE_ADD(a.dtregister, INTERVAL 1 HOUR) >= NOW();
-		", array(
-			":idrecovery" => $idrecovery
-		)); // faz um select do usuário referente ao código de recuperação de senha enviado, porém só retorna se o envio do código foi feito dentro do prazo de 1 hr do momento da solicitação e se esse código não foi utilizado para uma recuperação nenhuma vez.
+			a.idrecovery = :idrecovery
+			AND
+			a.dtrecovery IS NULL
+			AND
+			DATE_ADD(a.dtregister, INTERVAL 1 HOUR) >= NOW();
+		",
+			array(
+				":idrecovery" => $idrecovery
+			)
+		); // faz um select do usuário referente ao código de recuperação de senha enviado, porém só retorna se o envio do código foi feito dentro do prazo de 1 hr do momento da solicitação e se esse código não foi utilizado para uma recuperação nenhuma vez.
 
 		//valida se o código retornou algo
 		if (count($results) === 0) // se a quantidade de linhas for igual a zero

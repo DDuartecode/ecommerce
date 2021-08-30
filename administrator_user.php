@@ -9,12 +9,35 @@ $app->get("/administrator/users", function () {
 
 	User::verifyLogin(); // vusuário precisa estar logado
 
-	$users = User::listAll(); // $users recebe lista com todos os usuários
+	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+
+	if ($search != '') {
+		$pagination = User::getPageSearch($search, $page); // $users recebe lista com todos os usuários
+
+	} else {
+		$pagination = User::getPage($page); // $users recebe lista com todos os usuários
+
+	}
+
+	$pages = [];
+
+	for ($x = 0; $x < $pagination['pages']; $x++) {
+		array_push($pages, [
+			'href' => '/administrator/users?' . http_build_query([
+				'page' => $x + 1,
+				'search' => $search
+			]),
+			'text' => $x + 1
+		]);
+	}
 
 	$page = new PageAdmin();
 
 	$page->setTpl("users", array( //seta os dados contidos na variável $users [line 65]
-		"users" => $users
+		"users" => $pagination['data'],
+		"search" => $search,
+		"pages" => $pages
 	));
 });
 
